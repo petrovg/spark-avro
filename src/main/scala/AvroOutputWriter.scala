@@ -1,24 +1,5 @@
-import org.apache.hadoop.mapreduce.TaskAttemptContext
 import org.apache.spark.sql.sources.{OutputWriter, OutputWriterFactory}
 import org.apache.spark.sql.types.StructType
-
-class AvroOutputWriterFactory(schema: StructType,
-                              recordName: String,
-                              recordNamespace: String) extends OutputWriterFactory {
-
-
-  override private[sql] def newInstance(path: String,
-                                        bucketId: Option[Int],
-                                        dataSchema: StructType,
-                                        context: TaskAttemptContext): OutputWriter = {
-    val config = context.getConfiguration
-    val recordName = config.getStrings("recordName", "topLevelRecord").head
-    val recordNamespace = config.getStrings("recordNamespace", "").head
-    new AvroOutputWriter(path, context, dataSchema, recordName, recordNamespace)
-  }
-}
-
-
 import java.io.{IOException, OutputStream}
 import java.nio.ByteBuffer
 import java.sql.Timestamp
@@ -38,6 +19,24 @@ import org.apache.spark.sql.sources.OutputWriter
 import org.apache.spark.sql.types._
 
 import scala.collection.immutable.Map
+
+class AvroOutputWriterFactory(schema: StructType,
+                              recordName: String,
+                              recordNamespace: String) extends OutputWriterFactory {
+
+
+  override private[sql] def newInstance(path: String,
+                                        bucketId: Option[Int],
+                                        dataSchema: StructType,
+                                        context: TaskAttemptContext): OutputWriter = {
+    val config = context.getConfiguration
+    val recordName = config.getStrings("recordName", "topLevelRecord").head
+    val recordNamespace = config.getStrings("recordNamespace", "").head
+    new AvroOutputWriter(path, context, dataSchema, recordName, recordNamespace)
+  }
+}
+
+
 
 class AvroOutputWriter(path: String,
                        context: TaskAttemptContext,
