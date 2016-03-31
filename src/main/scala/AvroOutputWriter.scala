@@ -7,21 +7,14 @@ class AvroOutputWriterFactory(schema: StructType,
                               recordNamespace: String) extends OutputWriterFactory {
 
 
-
-
-
-//  override def newInstance(path: String,
-//                           dataSchema: StructType,
-//                           context: TaskAttemptContext): OutputWriter =
-//    new AvroOutputWriter(path, context, schema, recordName, recordNamespace)
   override private[sql] def newInstance(path: String,
                                         bucketId: Option[Int],
                                         dataSchema: StructType,
                                         context: TaskAttemptContext): OutputWriter = {
-      val config = context.getConfiguration
-      val recordName = config.getStrings("recordName", "topLevelRecord").head
-      val recordNamespace = config.getStrings("recordNamespace", "").head
-      new AvroOutputWriter(path, context, dataSchema, recordName, recordNamespace)
+    val config = context.getConfiguration
+    val recordName = config.getStrings("recordName", "topLevelRecord").head
+    val recordNamespace = config.getStrings("recordNamespace", "").head
+    new AvroOutputWriter(path, context, dataSchema, recordName, recordNamespace)
   }
 }
 
