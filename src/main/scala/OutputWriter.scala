@@ -1,55 +1,65 @@
-/*
- * Copyright 2014 Databricks
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+import org.apache.hadoop.mapreduce.TaskAttemptContext
+import org.apache.spark.sql.sources.{OutputWriter, OutputWriterFactory}
+import org.apache.spark.sql.types.StructType
 
-package com.databricks.spark.avro
+class AvroOutputWriterFactory(schema: StructType,
+                              recordName: String,
+                              recordNamespace: String) extends OutputWriterFactory {
 
-import java.io.{OutputStream, IOException}
+
+
+
+
+//  override def newInstance(path: String,
+//                           dataSchema: StructType,
+//                           context: TaskAttemptContext): OutputWriter =
+//    new AvroOutputWriter(path, context, schema, recordName, recordNamespace)
+  override private[sql] def newInstance(path: String,
+                                        bucketId: Option[Int],
+                                        dataSchema: StructType,
+                                        context: TaskAttemptContext): OutputWriter = {
+      val config = context.getConfiguration
+      val recordName = config.getStrings("recordName", "topLevelRecord").head
+      val recordNamespace = config.getStrings("recordNamespace", "").head
+      new AvroOutputWriter(path, context, dataSchema, recordName, recordNamespace)
+  }
+}
+
+
+import java.io.{IOException, OutputStream}
 import java.nio.ByteBuffer
 import java.sql.Timestamp
 import java.util.HashMap
 
-import org.apache.hadoop.fs.Path
-import scala.collection.immutable.Map
-
 import org.apache.avro.generic.GenericData.Record
 import org.apache.avro.generic.GenericRecord
-import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.mapred.AvroKey
 import org.apache.avro.mapreduce.AvroKeyOutputFormat
+import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.NullWritable
-import org.apache.hadoop.mapreduce.{TaskAttemptID, RecordWriter, TaskAttemptContext}
+import org.apache.hadoop.mapreduce.{RecordWriter, TaskAttemptContext, TaskAttemptID}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.sources.OutputWriter
 import org.apache.spark.sql.types._
 
+import scala.collection.immutable.Map
+
 // NOTE: This class is instantiated and used on executor side only, no need to be serializable.
-private[avro] class AvroOutputWriter(
-    path: String,
-    context: TaskAttemptContext,
-    schema: StructType,
-    recordName: String,
-    recordNamespace: String) extends OutputWriter  {
+class AvroOutputWriter(
+                                      path: String,
+                                      context: TaskAttemptContext,
+                                      schema: StructType,
+                                      recordName: String,
+                                      recordNamespace: String) extends OutputWriter  {
 
   private lazy val converter = createConverterToAvro(schema, recordName, recordNamespace)
 
   /**
-   * Overrides the couple of methods responsible for generating the output streams / files so
-   * that the data can be correctly partitioned
-   */
+    * Overrides the couple of methods responsible for generating the output streams / files so
+    * that the data can be correctly partitioned
+    */
   private val recordWriter: RecordWriter[AvroKey[GenericRecord], NullWritable] =
     new AvroKeyOutputFormat[GenericRecord]() {
 
@@ -89,13 +99,13 @@ private[avro] class AvroOutputWriter(
   override def close(): Unit = recordWriter.close(context)
 
   /**
-   * This function constructs converter function for a given sparkSQL datatype. This is used in
-   * writing Avro records out to disk
-   */
+    * This function constructs converter function for a given sparkSQL datatype. This is used in
+    * writing Avro records out to disk
+    */
   private def createConverterToAvro(
-      dataType: DataType,
-      structName: String,
-      recordNamespace: String): (Any) => Any = {
+                                     dataType: DataType,
+                                     structName: String,
+                                     recordNamespace: String): (Any) => Any = {
     dataType match {
       case BinaryType => (item: Any) => item match {
         case null => null
