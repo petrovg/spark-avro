@@ -46,13 +46,11 @@ import org.apache.spark.sql.types._
 
 import scala.collection.immutable.Map
 
-// NOTE: This class is instantiated and used on executor side only, no need to be serializable.
-class AvroOutputWriter(
-                                      path: String,
-                                      context: TaskAttemptContext,
-                                      schema: StructType,
-                                      recordName: String,
-                                      recordNamespace: String) extends OutputWriter  {
+class AvroOutputWriter(path: String,
+                       context: TaskAttemptContext,
+                       schema: StructType,
+                       recordName: String,
+                       recordNamespace: String) extends OutputWriter  {
 
   private lazy val converter = createConverterToAvro(schema, recordName, recordNamespace)
 
