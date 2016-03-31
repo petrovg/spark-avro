@@ -1,3 +1,5 @@
+package org.apache.spark.sql.avro
+
 import org.apache.spark.sql.sources.{OutputWriter, OutputWriterFactory}
 import org.apache.spark.sql.types.StructType
 import java.io.{IOException, OutputStream}
@@ -17,6 +19,7 @@ import org.apache.hadoop.mapreduce.{RecordWriter, TaskAttemptContext, TaskAttemp
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.sources.OutputWriter
 import org.apache.spark.sql.types._
+import org.apache.spark.avro.SchemaConverters
 
 import scala.collection.immutable.Map
 

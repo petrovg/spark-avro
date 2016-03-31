@@ -1,3 +1,5 @@
+package org.apache.spark.avro
+
 import java.io.FileNotFoundException
 
 import org.apache.avro.SchemaBuilder
@@ -10,6 +12,7 @@ import org.apache.hadoop.mapreduce.Job
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.{RDD, UnionRDD}
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.avro.AvroOutputWriterFactory
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.sources.{DataSourceRegister, FileFormat, Filter, OutputWriterFactory}
 import org.apache.spark.sql.types.StructType

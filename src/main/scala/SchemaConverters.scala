@@ -1,3 +1,5 @@
+package org.apache.spark.avro
+
 import java.nio.ByteBuffer
 import java.util.HashMap
 
