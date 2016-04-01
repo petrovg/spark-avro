@@ -8,8 +8,8 @@ resolvers in ThisBuild += "apache-snapshots" at "http://repository.apache.org/sn
 sparkVersion := "2.0.0-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "2.0.0-SNAPSHOT",
-  "org.apache.spark" %% "spark-sql" % "2.0.0-SNAPSHOT",
+  "org.apache.spark" %% "spark-core" % "2.0.0-SNAPSHOT" % Provided,
+  "org.apache.spark" %% "spark-sql" % "2.0.0-SNAPSHOT" % Provided,
   "org.scalatest" %% "scalatest" % "2.2.1" % Test
 )
 
