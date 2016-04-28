@@ -1,37 +1,28 @@
 package org.apache.spark.sql.avro
 
-import org.apache.spark.sql.sources.{OutputWriter, OutputWriterFactory}
+import org.apache.avro.mapreduce.AvroJob
+import org.apache.hadoop.mapreduce.TaskAttemptContext
+import org.apache.spark.sql.execution.datasources.{ OutputWriter, OutputWriterFactory }
 import org.apache.spark.sql.types.StructType
-import java.io.{IOException, OutputStream}
-import java.nio.ByteBuffer
-import java.sql.Timestamp
-import java.util.HashMap
-
-import org.apache.avro.generic.GenericData.Record
-import org.apache.avro.generic.GenericRecord
-import org.apache.avro.mapred.AvroKey
-import org.apache.avro.mapreduce.AvroKeyOutputFormat
-import org.apache.avro.{Schema, SchemaBuilder}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.io.NullWritable
-import org.apache.hadoop.mapreduce.{RecordWriter, TaskAttemptContext, TaskAttemptID}
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.sources.OutputWriter
-import org.apache.spark.sql.types._
 import org.apache.spark.avro.SchemaConverters
-
-import scala.collection.immutable.Map
+import org.apache.hadoop.mapreduce.Job
 
 class AvroOutputWriterFactory(schema: StructType,
                               recordName: String,
                               recordNamespace: String) extends OutputWriterFactory {
 
 
-  override private[sql] def newInstance(path: String,
-                                        bucketId: Option[Int],
-                                        dataSchema: StructType,
-                                        context: TaskAttemptContext): OutputWriter = {
+
+
+
+  //  override def newInstance(path: String,
+  //                           dataSchema: StructType,
+  //                           context: TaskAttemptContext): OutputWriter =
+  //    new AvroOutputWriter(path, context, schema, recordName, recordNamespace)
+  override def newInstance(path: String,
+                           bucketId: Option[Int],
+                           dataSchema: StructType,
+                           context: TaskAttemptContext): OutputWriter = {
     val config = context.getConfiguration
     val recordName = config.getStrings("recordName", "topLevelRecord").head
     val recordNamespace = config.getStrings("recordNamespace", "").head
@@ -40,12 +31,32 @@ class AvroOutputWriterFactory(schema: StructType,
 }
 
 
+import java.io.{OutputStream, IOException}
+import java.nio.ByteBuffer
+import java.sql.Timestamp
+import java.util.HashMap
 
-class AvroOutputWriter(path: String,
-                       context: TaskAttemptContext,
-                       schema: StructType,
-                       recordName: String,
-                       recordNamespace: String) extends OutputWriter  {
+import org.apache.hadoop.fs.Path
+import scala.collection.immutable.Map
+
+import org.apache.avro.generic.GenericData.Record
+import org.apache.avro.generic.GenericRecord
+import org.apache.avro.{Schema, SchemaBuilder}
+import org.apache.avro.mapred.AvroKey
+import org.apache.avro.mapreduce.AvroKeyOutputFormat
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.io.NullWritable
+import org.apache.hadoop.mapreduce.{TaskAttemptID, RecordWriter, TaskAttemptContext}
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types._
+
+// NOTE: This class is instantiated and used on executor side only, no need to be serializable.
+class AvroOutputWriter(
+                        path: String,
+                        context: TaskAttemptContext,
+                        schema: StructType,
+                        recordName: String,
+                        recordNamespace: String) extends OutputWriter  {
 
   private lazy val converter = createConverterToAvro(schema, recordName, recordNamespace)
 

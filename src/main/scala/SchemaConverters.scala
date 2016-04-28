@@ -3,14 +3,13 @@ package org.apache.spark.avro
 import java.nio.ByteBuffer
 import java.util.HashMap
 
+import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.avro.Schema.Type._
 import org.apache.avro.SchemaBuilder._
 import org.apache.avro.generic.GenericData.Fixed
 import org.apache.avro.generic.{GenericData, GenericRecord}
-import org.apache.avro.{Schema, SchemaBuilder}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
-
 import scala.collection.JavaConversions._
 
 
@@ -243,7 +242,7 @@ object SchemaConverters {
                                          dataType: DataType,
                                          newFieldBuilder: BaseFieldTypeBuilder[T],
                                          structName: String,
-                                         recordNamespace: String): FieldDefault[T, _] = {
+                                         recordNamespace: String) = {
     dataType match {
       case ByteType => newFieldBuilder.intType()
       case ShortType => newFieldBuilder.intType()
